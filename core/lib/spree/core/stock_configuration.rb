@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Core
     class StockConfiguration
@@ -5,7 +7,7 @@ module Spree
       attr_writer :estimator_class
 
       def coordinator_class
-        @coordinator_class ||= '::Spree::Stock::Coordinator'
+        @coordinator_class ||= '::Spree::Stock::SimpleCoordinator'
         @coordinator_class.constantize
       end
 

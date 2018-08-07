@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::OrderCancellations do
+require 'rails_helper'
+
+RSpec.describe Spree::OrderCancellations do
   describe "#cancel_unit" do
     subject { Spree::OrderCancellations.new(order).cancel_unit(inventory_unit) }
     let(:order) { create(:shipped_order, line_items_count: 1) }

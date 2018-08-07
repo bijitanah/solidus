@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 require 'rails'
+require 'rails/generators'
 
 module Solidus
   module Views

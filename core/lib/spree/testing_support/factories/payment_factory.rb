@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'spree/testing_support/factories/payment_method_factory'
 require 'spree/testing_support/factories/credit_card_factory'
 require 'spree/testing_support/factories/order_factory'
 require 'spree/testing_support/factories/store_credit_factory'
 
-FactoryGirl.define do
-  factory :payment, aliases: [:credit_card_payment], class: Spree::Payment do
+FactoryBot.define do
+  factory :payment, aliases: [:credit_card_payment], class: 'Spree::Payment' do
     association(:payment_method, factory: :credit_card_payment_method)
     source { create(:credit_card, user: order.user, address: order.bill_address) }
     order
@@ -37,12 +39,12 @@ FactoryGirl.define do
     end
   end
 
-  factory :check_payment, class: Spree::Payment do
+  factory :check_payment, class: 'Spree::Payment' do
     association(:payment_method, factory: :check_payment_method)
     order
   end
 
-  factory :store_credit_payment, class: Spree::Payment, parent: :payment do
+  factory :store_credit_payment, class: 'Spree::Payment', parent: :payment do
     association(:payment_method, factory: :store_credit_payment_method)
     association(:source, factory: :store_credit)
   end

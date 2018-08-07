@@ -19,10 +19,10 @@ Style/ClassVars:
   Enabled: false
 
 # We need these names for backwards compatability
-Style/PredicateName:
+Naming/PredicateName:
   Enabled: false
 
-Style/AccessorMethodName:
+Naming/AccessorMethodName:
   Enabled: false
 
 # This has been used for customization
@@ -41,6 +41,9 @@ Style/GuardClause:
 Style/Next:
   Enabled: false
 
+Style/NumericPredicate:
+  Enabled: false
+
 Style/WordArray:
   Enabled: false
 
@@ -53,7 +56,7 @@ Performance/Count:
 Style/RaiseArgs:
   Enabled: false
 
-Style/OpMethod:
+Naming/BinaryOperatorParameterName:
   Enabled: false
 
 # We can use good judgement here
@@ -64,7 +67,7 @@ Style/RegexpLiteral:
 Style/AsciiComments:
   Enabled: false
 
-Lint/EndAlignment:
+Layout/EndAlignment:
   Enabled: false
 
 Layout/ElseAlignment:
@@ -94,7 +97,10 @@ Layout/AlignHash:
 Style/TrailingCommaInArguments:
   Enabled: false
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
   Enabled: false
 
 # Symbol Arrays are ok and the %i syntax widely unknown
@@ -116,14 +122,16 @@ Rails/DynamicFindBy:
 Lint/AmbiguousBlockAssociation:
   Exclude:
     - '*/spec/**/*'
+    - 'spec/**/*' # For the benefit of apps that inherit from this config
 
 # We use eval to add common_spree_dependencies into the Gemfiles of each of our gems
 Security/Eval:
   Exclude:
     - 'Gemfile'
+    - 'common_spree_dependencies.rb'
     - '*/Gemfile'
 
-Style/VariableNumber:
+Naming/VariableNumber:
   Enabled: false
 
 # Write empty methods as you wish.
@@ -235,6 +243,9 @@ Style/StringLiterals:
 Style/SymbolProc:
   Enabled: false
 
+Style/TernaryParentheses:
+  Enabled: false
+
 Style/WhileUntilModifier:
   Enabled: false
   StyleGuide: http://relaxed.ruby.style/#stylewhileuntilmodifier
@@ -278,4 +289,34 @@ Metrics/PerceivedComplexity:
   Enabled: false
 
 Bundler/OrderedGems:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+# json.() is idiomatic in jbuilder files
+Style/LambdaCall:
+  Enabled: false
+
+Naming/UncommunicativeMethodParamName:
+  AllowedNames:
+    - id
+    - to
+    - _
+
+# Rubocop doesn't understand side-effects
+Style/IdenticalConditionalBranches:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Lint/UselessComparison:
+  Enabled: false
+
+Lint/HandleExceptions:
   Enabled: false

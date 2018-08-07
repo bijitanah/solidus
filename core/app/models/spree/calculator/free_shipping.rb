@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require_dependency 'spree/calculator'
+
 module Spree
   # @deprecated This calculator will be removed in future versions of Spree.
   #   The only case where it was used was for Free Shipping Promotions.  There is

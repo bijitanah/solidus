@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'cancan'
+
 module Spree
   module Core
     module ControllerHelpers
@@ -17,7 +21,7 @@ module Spree
 
           class_attribute :unauthorized_redirect
           self.unauthorized_redirect = -> do
-            flash[:error] = Spree.t(:authorization_failure)
+            flash[:error] = I18n.t('spree.authorization_failure')
             redirect_to "/unauthorized"
           end
 
@@ -38,7 +42,10 @@ module Spree
 
         def set_guest_token
           unless cookies.signed[:guest_token].present?
-            cookies.permanent.signed[:guest_token] = SecureRandom.urlsafe_base64(nil, false)
+            cookies.permanent.signed[:guest_token] = {
+              value: SecureRandom.urlsafe_base64(nil, false),
+              httponly: true
+            }
           end
         end
 
@@ -63,10 +70,10 @@ module Spree
         def try_spree_current_user
           # This one will be defined by apps looking to hook into Spree
           # As per authentication_helpers.rb
-          if respond_to?(:spree_current_user)
+          if respond_to?(:spree_current_user, true)
             spree_current_user
           # This one will be defined by Devise
-          elsif respond_to?(:current_spree_user)
+          elsif respond_to?(:current_spree_user, true)
             current_spree_user
           end
         end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "Adjustments", type: :feature do
@@ -65,7 +67,7 @@ describe "Adjustments", type: :feature do
         fill_in "adjustment_amount", with: ""
         fill_in "adjustment_label", with: ""
         click_button "Continue"
-        expect(page).to have_content("Description can't be blank")
+        expect(page).to have_content("Label can't be blank")
         expect(page).to have_content("Amount is not a number")
       end
     end
@@ -98,7 +100,7 @@ describe "Adjustments", type: :feature do
         fill_in "adjustment_amount", with: ""
         fill_in "adjustment_label", with: ""
         click_button "Continue"
-        expect(page).to have_content("Description can't be blank")
+        expect(page).to have_content("Label can't be blank")
         expect(page).to have_content("Amount is not a number")
       end
     end

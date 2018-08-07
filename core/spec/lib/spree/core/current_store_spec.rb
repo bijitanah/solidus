@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Core::CurrentStore do
+require 'rails_helper'
+
+RSpec.describe Spree::Core::CurrentStore do
   describe "#store" do
     subject { Spree::Deprecation.silence { Spree::Core::CurrentStore.new(request).store } }
 

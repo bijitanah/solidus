@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::UnitCancel do
+require 'rails_helper'
+
+RSpec.describe Spree::UnitCancel do
   let(:unit_cancel) { Spree::UnitCancel.create!(inventory_unit: inventory_unit, reason: Spree::UnitCancel::SHORT_SHIP) }
   let(:inventory_unit) { create(:inventory_unit) }
 

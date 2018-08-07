@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::PaymentMethod::Check do
+require 'rails_helper'
+
+RSpec.describe Spree::PaymentMethod::Check do
   let(:order) { create(:order) }
   subject { described_class.new }
 
@@ -53,25 +55,25 @@ describe Spree::PaymentMethod::Check do
   end
 
   context "#capture" do
-    it "succeds" do
+    it "succeeds" do
       expect(subject.capture).to be_success
     end
   end
 
-  context "#cancel" do
-    it "returns nil" do
-      expect(subject.cancel).to be_nil
+  context "#try_void" do
+    it "succeeds" do
+      expect(subject.try_void).to be_success
     end
   end
 
   context "#void" do
-    it "succeds" do
+    it "succeeds" do
       expect(subject.void).to be_success
     end
   end
 
   context "#credit" do
-    it "succeds" do
+    it "succeeds" do
       expect(subject.credit).to be_success
     end
   end

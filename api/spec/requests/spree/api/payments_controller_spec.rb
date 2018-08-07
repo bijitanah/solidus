@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
@@ -41,6 +43,17 @@ module Spree
             post spree.api_order_payments_path(order), params: { payment: { payment_method_id: PaymentMethod.first.id, amount: 50 } }
             expect(response.status).to eq(201)
             expect(json_response).to have_attributes(attributes)
+          end
+
+          context "disallowed payment method" do
+            it "does not create a new payment" do
+              PaymentMethod.first.update!(available_to_users: false)
+
+              expect {
+                post spree.api_order_payments_path(order), params: { payment: { payment_method_id: PaymentMethod.first.id, amount: 50 } }
+              }.not_to change { Spree::Payment.count }
+              expect(response.status).to eq(404)
+            end
           end
         end
 

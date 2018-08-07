@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'spree/core/product_filters'
+
 module Spree
   class Taxon < Spree::Base
     acts_as_nested_set dependent: :destroy
@@ -34,10 +38,9 @@ module Spree
     # @note This method is meant to be overridden on a store by store basis.
     # @return [Array] filters that should be used for a taxon
     def applicable_filters
-      fs = []
-      # fs << ProductFilters.taxons_below(self)
-      ## unless it's a root taxon? left open for demo purposes
+      Spree::Deprecation.warn "Spree::Taxon#applicable_filters is deprecated, if you are using this functionality please move it into your own application."
 
+      fs = []
       fs << Spree::Core::ProductFilters.price_filter if Spree::Core::ProductFilters.respond_to?(:price_filter)
       fs << Spree::Core::ProductFilters.brand_filter if Spree::Core::ProductFilters.respond_to?(:brand_filter)
       fs
@@ -57,7 +60,7 @@ module Spree
     # name and its parents permalink (if present.)
     def set_permalink
       permalink_tail = permalink.split('/').last if permalink.present?
-      permalink_tail ||= name.to_url
+      permalink_tail ||= Spree::Config.taxon_url_parametizer_class.parameterize(name)
       self.permalink_part = permalink_tail
     end
 
@@ -83,6 +86,19 @@ module Spree
     #   belong to this taxon
     def active_products
       products.not_deleted.available
+    end
+
+    # @return [ActiveRecord::Relation<Spree::Product>] all self and descendant products
+    def all_products
+      scope = Product.joins(:taxons)
+      scope.where(
+        spree_taxons: { id: self_and_descendants.select(:id) }
+      )
+    end
+
+    # @return [ActiveRecord::Relation<Spree::Variant>] all self and descendant variants, including master variants.
+    def all_variants
+      Variant.where(product_id: all_products.select(:id))
     end
 
     # @return [String] this taxon's ancestors names followed by its own name,

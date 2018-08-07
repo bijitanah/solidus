@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class BackendConfiguration < Preferences::Configuration
     preference :locale, :string, default: Rails.application.config.i18n.default_locale
@@ -10,12 +12,12 @@ module Spree
                             :taxons]
     REPORT_TABS        ||= [:reports]
     CONFIGURATION_TABS ||= [:stores, :tax_categories,
-                            :tax_rates, :zones, :countries, :states,
+                            :tax_rates, :zones,
                             :payment_methods, :shipping_methods,
                             :shipping_categories, :stock_locations,
                             :refund_reasons, :reimbursement_types, :return_authorization_reasons]
     PROMOTION_TABS     ||= [:promotions, :promotion_categories]
-    STOCK_TABS         ||= [:stock_items, :stock_transfers]
+    STOCK_TABS         ||= [:stock_items]
     USER_TABS          ||= [:users, :store_credits]
 
     # An item which should be drawn in the admin menu
@@ -107,7 +109,6 @@ module Spree
           'cubes',
           condition: -> { can?(:admin, Spree::StockItem) },
           label: :stock,
-          partial: 'spree/admin/shared/stock_sub_menu',
           url: :admin_stock_items_path
         ),
         MenuItem.new(

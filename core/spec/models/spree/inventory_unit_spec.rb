@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::InventoryUnit, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::InventoryUnit, type: :model do
   let(:stock_location) { create(:stock_location_with_items) }
   let(:stock_item) { stock_location.stock_items.order(:id).first }
   let(:line_item) { create(:line_item, variant: stock_item.variant) }
@@ -114,17 +116,17 @@ describe Spree::InventoryUnit, type: :model do
     end
   end
 
-  context "variants deleted" do
+  context "variants discarded" do
     let!(:unit) { create(:inventory_unit) }
 
     it "can still fetch variant" do
-      unit.variant.destroy
+      unit.variant.discard
       expect(unit.reload.variant).to be_a Spree::Variant
     end
 
     it "can still fetch variants by eager loading (remove default_scope)" do
       skip "find a way to remove default scope when eager loading associations"
-      unit.variant.destroy
+      unit.variant.discard
       expect(Spree::InventoryUnit.joins(:variant).includes(:variant).first.variant).to be_a Spree::Variant
     end
   end
@@ -146,7 +148,7 @@ describe Spree::InventoryUnit, type: :model do
   end
 
   describe "#current_or_new_return_item" do
-    before { allow(inventory_unit).to receive_messages(pre_tax_amount: 100.0) }
+    before { allow(inventory_unit).to receive_messages(total_excluding_vat: 100.0) }
 
     subject { inventory_unit.current_or_new_return_item }
 

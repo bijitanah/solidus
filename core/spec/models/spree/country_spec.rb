@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Country, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Country, type: :model do
   describe '.default' do
     before do
       create(:country, iso: "DE", id: 1)

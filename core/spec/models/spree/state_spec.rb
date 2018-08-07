@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::State, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::State, type: :model do
   describe '.with_name_or_abbr' do
     subject do
       Spree::State.with_name_or_abbr(search_term)

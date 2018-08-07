@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
   describe Api::TaxonsController, type: :request do
-
     let(:taxonomy) { create(:taxonomy) }
     let(:taxon) { create(:taxon, name: "Ruby", taxonomy: taxonomy) }
     let(:taxon2) { create(:taxon, name: "Rails", taxonomy: taxonomy) }
@@ -92,6 +93,7 @@ module Spree
       end
 
       it "gets all taxons in JSTree form" do
+        expect(Spree::Deprecation).to(receive(:warn))
         get spree.jstree_api_taxonomy_taxon_path(taxonomy, taxon.id)
         response = json_response.first
         expect(response["data"]).to eq(taxon2.name)
@@ -119,6 +121,31 @@ module Spree
       it "cannot delete a taxon" do
         delete spree.api_taxonomy_taxon_path(taxonomy, taxon.id)
         assert_unauthorized!
+      end
+
+      context "with caching enabled" do
+        let!(:product) { create(:product, taxons: [taxon]) }
+
+        before do
+          ActionController::Base.perform_caching = true
+        end
+
+        it "handles exclude_data correctly" do
+          get spree.api_taxon_products_path, params: { id: taxon.id, simple: true }
+          expect(response).to be_successful
+          simple_response = json_response
+
+          get spree.api_taxon_products_path, params: { id: taxon.id }
+          expect(response).to be_successful
+          full_response = json_response
+
+          expect(simple_response["products"][0]["description"]).to be_nil
+          expect(full_response["products"][0]["description"]).not_to be_nil
+        end
+
+        after do
+          ActionController::Base.perform_caching = false
+        end
       end
     end
 

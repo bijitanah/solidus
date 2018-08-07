@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe "Product scopes", type: :model do
+require 'rails_helper'
+
+RSpec.describe "Product scopes", type: :model do
   let!(:product) { create(:product) }
 
   context "A product assigned to parent and child taxons" do
@@ -131,7 +133,7 @@ describe "Product scopes", type: :model do
       end
 
       context "with soft-deleted master price" do
-        before { product.master.prices.destroy_all }
+        before { product.master.prices.discard_all }
 
         it "doesn't include the product" do
           expect(Spree::Product.available).to match_array([])

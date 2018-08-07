@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::TaxCategory, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::TaxCategory, type: :model do
   context 'default tax category' do
     let(:tax_category) { create(:tax_category) }
     let(:new_tax_category) { create(:tax_category) }

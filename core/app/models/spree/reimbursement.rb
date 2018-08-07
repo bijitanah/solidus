@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class Reimbursement < Spree::Base
     class IncompleteReimbursementError < StandardError; end
@@ -110,7 +112,7 @@ module Spree
       else
         errored!
         reimbursement_failure_hooks.each { |h| h.call self }
-        raise IncompleteReimbursementError, Spree.t("validation.unpaid_amount_not_zero", amount: unpaid_amount)
+        raise IncompleteReimbursementError, I18n.t("spree.validation.unpaid_amount_not_zero", amount: unpaid_amount)
       end
     end
 
@@ -160,7 +162,7 @@ module Spree
     end
 
     def send_reimbursement_email
-      Spree::ReimbursementMailer.reimbursement_email(id).deliver_later
+      Spree::Config.reimbursement_mailer_class.reimbursement_email(id).deliver_later
     end
 
     # If there are multiple different reimbursement types for a single

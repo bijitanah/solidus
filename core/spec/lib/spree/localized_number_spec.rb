@@ -1,6 +1,9 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::LocalizedNumber do
+require 'spec_helper'
+require 'spree/localized_number'
+
+RSpec.describe Spree::LocalizedNumber do
   context ".parse" do
     before do
       I18n.enforce_available_locales = false

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class PaymentMethodsController < ResourceController
@@ -13,7 +15,7 @@ module Spree
         invoke_callbacks(:create, :before)
         if @payment_method.save
           invoke_callbacks(:create, :after)
-          flash[:success] = Spree.t(:successfully_created, resource: Spree.t(:payment_method))
+          flash[:success] = t('spree.successfully_created', resource: t('spree.payment_method'))
           redirect_to edit_admin_payment_method_path(@payment_method)
         else
           invoke_callbacks(:create, :fails)
@@ -34,7 +36,7 @@ module Spree
 
         if @payment_method.update_attributes(attributes)
           invoke_callbacks(:update, :after)
-          flash[:success] = Spree.t(:successfully_updated, resource: Spree.t(:payment_method))
+          flash[:success] = t('spree.successfully_updated', resource: t('spree.payment_method'))
           redirect_to edit_admin_payment_method_path(@payment_method)
         else
           invoke_callbacks(:update, :fails)
@@ -49,9 +51,9 @@ module Spree
       end
 
       def load_providers
+        Spree::Deprecation.warn('load_providers is deprecated. Please use load_payment_method_types instead.', caller)
         load_payment_method_types
       end
-      deprecate load_providers: :load_payment_method_types, deprecator: Spree::Deprecation
 
       def load_payment_method_types
         @payment_method_types = Rails.application.config.spree.payment_methods.sort_by(&:name)
@@ -60,30 +62,24 @@ module Spree
       end
 
       def validate_payment_provider
+        Spree::Deprecation.warn('validate_payment_provider is deprecated. Please use validate_payment_method_type instead.', caller)
         validate_payment_method_type
       end
-      deprecate validate_payment_provider: :validate_payment_method_type,
-        deprecator: Spree::Deprecation
 
       def validate_payment_method_type
-        requested_type = params[:payment_method].delete(:type)
+        requested_type = params[:payment_method][:type]
         @payment_method_type = @payment_method_types.detect do |klass|
           klass.name == requested_type
         end
+
         if !@payment_method_type
-          flash[:error] = Spree.t(:invalid_payment_method_type)
+          flash[:error] = t('spree.invalid_payment_method_type')
           redirect_to new_admin_payment_method_path
         end
       end
 
       def payment_method_params
-        superclass_params = params.require(:payment_method).permit!
-        subclass_params = params[ActiveModel::Naming.param_key(@payment_method_type)] || ActionController::Parameters.new
-
-        superclass_params = superclass_params.permit!
-        subclass_params = subclass_params.permit!
-
-        superclass_params.to_h.merge(subclass_params.to_h)
+        params.require(:payment_method).permit!
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Api
     class TaxonsController < Spree::Api::BaseController
@@ -23,6 +25,7 @@ module Spree
       end
 
       def jstree
+        Spree::Deprecation.warn("Please don't use `/api/taxonomies/:taxonomy_id/taxons/:taxon_id/jstree` endpoint. It is deprecated and will be removed in the next future.", caller)
         show
       end
 

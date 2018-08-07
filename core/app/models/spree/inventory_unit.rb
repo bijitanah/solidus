@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   # Tracks the state of line items' fulfillment.
   #
@@ -18,6 +20,10 @@ module Spree
     has_one :order, through: :shipment
 
     delegate :order_id, to: :shipment
+
+    def order=(_)
+      raise "The order association has been removed from InventoryUnit. The order is now determined from the shipment."
+    end
 
     validates_presence_of :shipment, :line_item, :variant
 
@@ -41,10 +47,11 @@ module Spree
         .backordered.order(Spree::Order.arel_table[:completed_at].asc)
     end
 
+    # @method backordered_for_stock_item(stock_item)
     # @param stock_item [Spree::StockItem] the stock item of the desired
     #   inventory units
     # @return [ActiveRecord::Relation<Spree::InventoryUnit>] backordered
-    # inventory units for the given stock item
+    #   inventory units for the given stock item
     scope :backordered_for_stock_item, ->(stock_item) do
       backordered_per_variant(stock_item)
         .where(spree_shipments: { stock_location_id: stock_item.stock_location_id })
@@ -130,7 +137,7 @@ module Spree
     end
 
     def percentage_of_line_item
-      1 / BigDecimal.new(line_item.quantity)
+      1 / BigDecimal(line_item.quantity)
     end
 
     def current_return_item

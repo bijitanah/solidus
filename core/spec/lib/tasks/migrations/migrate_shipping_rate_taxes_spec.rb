@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe 'solidus:migrations:migrate_shipping_rate_taxes' do
+require 'rails_helper'
+
+RSpec.describe 'solidus:migrations:migrate_shipping_rate_taxes' do
   describe 'up' do
     include_context(
       'rake',

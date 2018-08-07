@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
   describe Api::UsersController, type: :request do
-
     let(:user) { create(:user, spree_api_key: SecureRandom.hex) }
     let(:stranger) { create(:user, email: 'stranger@example.com') }
     let(:attributes) { [:id, :email, :created_at, :updated_at] }
@@ -142,8 +143,8 @@ module Spree
       it "cannot destroy user with orders" do
         create(:completed_order_with_totals, user: user)
         delete spree.api_user_path(user)
-        expect(json_response["exception"]).to eq "Spree::Core::DestroyWithOrdersError"
         expect(response.status).to eq(422)
+        expect(json_response).to eq({ "error" => "Cannot delete record." })
       end
     end
   end

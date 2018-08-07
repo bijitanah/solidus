@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module Spree
-  class Promotion
+  class Promotion < Spree::Base
     module Rules
       # A rule to apply to an order greater than (or greater than or equal to)
       # a specific amount
@@ -17,7 +19,7 @@ module Spree
         def eligible?(order, _options = {})
           return false unless order.currency == preferred_currency
           item_total = order.item_total
-          unless item_total.send(preferred_operator == 'gte' ? :>= : :>, BigDecimal.new(preferred_amount.to_s))
+          unless item_total.send(preferred_operator == 'gte' ? :>= : :>, BigDecimal(preferred_amount.to_s))
             eligibility_errors.add(:base, ineligible_message)
           end
 

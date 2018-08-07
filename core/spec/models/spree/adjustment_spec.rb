@@ -1,9 +1,8 @@
-# encoding: utf-8
-#
+# frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
-describe Spree::Adjustment, type: :model do
+RSpec.describe Spree::Adjustment, type: :model do
   let!(:store) { create :store }
   let(:order) { Spree::Order.new }
   let(:line_item) { create :line_item, order: order }
@@ -78,8 +77,8 @@ describe Spree::Adjustment, type: :model do
     end
   end
 
-  context '#update!' do
-    subject { adjustment.update! }
+  context '#recalculate' do
+    subject { adjustment.recalculate }
     let(:adjustment) do
       line_item.adjustments.create!(
         label: 'Adjustment',

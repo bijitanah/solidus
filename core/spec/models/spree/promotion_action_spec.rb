@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::PromotionAction, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::PromotionAction, type: :model do
   describe '#remove_from' do
     class MyPromotionAction < Spree::PromotionAction
       def perform(options = {})

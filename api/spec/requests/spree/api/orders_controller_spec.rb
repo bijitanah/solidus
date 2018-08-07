@@ -1,5 +1,6 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
-require 'spree/testing_support/bar_ability'
 
 module Spree
   describe Api::OrdersController, type: :request do
@@ -31,9 +32,10 @@ module Spree
     describe "POST create" do
       let(:target_user) { create :user }
       let(:date_override) { Time.parse('2015-01-01') }
+      let(:attributes) { { user_id: target_user.id, created_at: date_override, email: target_user.email } }
 
       subject do
-        post spree.api_orders_path, params: { order: { user_id: target_user.id, created_at: date_override, email: target_user.email } }
+        post spree.api_orders_path, params: { order: attributes }
         response
       end
 
@@ -44,12 +46,51 @@ module Spree
 
         it "does not include unpermitted params, or allow overriding the user" do
           subject
+          expect(response).to be_successful
           order = Spree::Order.last
           expect(order.user).to eq current_api_user
           expect(order.email).to eq target_user.email
         end
 
-        it { is_expected.to be_success }
+        it { is_expected.to be_successful }
+
+        context 'creating payment' do
+          let(:attributes) { super().merge(payments_attributes: [{ payment_method_id: payment_method.id }]) }
+
+          context "with allowed payment method" do
+            let!(:payment_method) { create(:check_payment_method, name: "allowed" ) }
+            it { is_expected.to be_successful }
+            it "creates a payment" do
+              expect {
+                subject
+              }.to change { Spree::Payment.count }.by(1)
+            end
+          end
+
+          context "with disallowed payment method" do
+            let!(:payment_method) { create(:check_payment_method, name: "forbidden", available_to_users: false) }
+            it { is_expected.to be_not_found }
+            it "creates no payments" do
+              expect {
+                subject
+              }.not_to change { Spree::Payment.count }
+            end
+          end
+        end
+
+        context "with existing promotion" do
+          let(:discount) { 2 }
+          before do
+            create(:promotion, :with_line_item_adjustment, apply_automatically: true, adjustment_rate: discount )
+          end
+
+          it "activates the promotion" do
+            post spree.api_orders_path, params: { order: { line_items: { "0" => { variant_id: variant.to_param, quantity: 1 } } } }
+            order = Order.last
+            line_item = order.line_items.first
+            expect(order.total).to eq(line_item.price - discount)
+          end
+        end
       end
 
       context "when the current user can administrate the order" do
@@ -65,11 +106,11 @@ module Spree
           expect(order.created_at).to eq date_override
         end
 
-        it { is_expected.to be_success }
+        it { is_expected.to be_successful }
       end
 
       context 'when the line items have custom attributes' do
-        it "can create an order with line items that have custom permitted attributes" do
+        it "can create an order with line items that have custom permitted attributes", :pending do
           PermittedAttributes.line_item_attributes << { options: [:some_option] }
           expect_any_instance_of(Spree::LineItem).to receive(:some_option=).once.with('4')
           post spree.api_orders_path, params: { order: { line_items: { "0" => { variant_id: variant.to_param, quantity: 5, options: { some_option: 4 } } } } }
@@ -100,7 +141,7 @@ module Spree
           }.to change { order.reload.email }.to("foo@foobar.com")
         end
 
-        it { is_expected.to be_success }
+        it { is_expected.to be_successful }
 
         it "does not associate users" do
           expect {
@@ -112,6 +153,30 @@ module Spree
           expect {
             subject
           }.to_not change{ order.reload.number }
+        end
+
+        context 'creating payment' do
+          let(:order_params) { super().merge(payments_attributes: [{ payment_method_id: payment_method.id }]) }
+
+          context "with allowed payment method" do
+            let!(:payment_method) { create(:check_payment_method, name: "allowed" ) }
+            it { is_expected.to be_successful }
+            it "creates a payment" do
+              expect {
+                subject
+              }.to change { Spree::Payment.count }.by(1)
+            end
+          end
+
+          context "with disallowed payment method" do
+            let!(:payment_method) { create(:check_payment_method, name: "forbidden", available_to_users: false) }
+            it { is_expected.to be_not_found }
+            it "creates no payments" do
+              expect {
+                subject
+              }.not_to change { Spree::Payment.count }
+            end
+          end
         end
       end
 
@@ -219,7 +284,7 @@ module Spree
 
     describe 'GET #show' do
       let(:order) { create :order_with_line_items }
-      let(:adjustment) { FactoryGirl.create(:adjustment, adjustable: order, order: order) }
+      let(:adjustment) { FactoryBot.create(:adjustment, adjustable: order, order: order) }
 
       subject { get spree.api_order_path(order) }
 
@@ -234,6 +299,22 @@ module Spree
           expect(variant).to_not be_nil
           expect(variant['in_stock']).to eq(false)
           expect(variant['total_on_hand']).to eq(0)
+          expect(variant['is_backorderable']).to eq(true)
+          expect(variant['is_destroyed']).to eq(false)
+        end
+      end
+
+      context 'when an item does not track inventory' do
+        before do
+          order.line_items.first.variant.update_attributes!(track_inventory: false)
+        end
+
+        it 'contains stock information on variant' do
+          subject
+          variant = json_response['line_items'][0]['variant']
+          expect(variant).to_not be_nil
+          expect(variant['in_stock']).to eq(true)
+          expect(variant['total_on_hand']).to eq(nil)
           expect(variant['is_backorderable']).to eq(true)
           expect(variant['is_destroyed']).to eq(false)
         end
@@ -267,6 +348,21 @@ module Spree
           expect(credit_cards[0]['id']).to eq payment.source.id
           expect(credit_cards[0]['address']['id']).to eq credit_card.address_id
         end
+
+        it 'renders the payment source view for gateway' do
+          subject
+          expect(response).to render_template partial: 'spree/api/payments/source_views/_gateway'
+        end
+      end
+
+      context 'when store credit is present' do
+        let!(:payment) { create(:store_credit_payment, order: order, source: store_credit) }
+        let(:store_credit) { create(:store_credit) }
+
+        it 'renders the payment source view for store credit' do
+          subject
+          expect(response).to render_template partial: 'spree/api/payments/source_views/_storecredit'
+        end
       end
     end
 
@@ -275,13 +371,6 @@ module Spree
       get spree.api_order_path(order)
       expect(response.status).to eq(200)
       expect(json_response["checkout_steps"]).to eq(%w[address delivery confirm complete])
-    end
-
-    # Regression test for https://github.com/spree/spree/issues/1992
-    it "can view an order not in a standard state" do
-      allow_any_instance_of(Order).to receive_messages user: current_api_user
-      order.update_column(:state, 'shipped')
-      get spree.api_order_path(order)
     end
 
     it "can not view someone else's order" do
@@ -298,18 +387,6 @@ module Spree
     it "can view an order if the token is passed in header" do
       get spree.api_order_path(order), headers: { "X-Spree-Order-Token" => order.guest_token }
       expect(response.status).to eq(200)
-    end
-
-    context "with BarAbility registered" do
-      before { Spree::Ability.register_ability(::BarAbility) }
-      after { Spree::Ability.remove_ability(::BarAbility) }
-
-      it "can view an order" do
-        user = build(:user, spree_roles: [Spree::Role.new(name: 'bar')])
-        allow(Spree.user_class).to receive_messages find_by: user
-        get spree.api_order_path(order)
-        expect(response.status).to eq(200)
-      end
     end
 
     it "cannot cancel an order that doesn't belong to them" do
@@ -344,10 +421,7 @@ module Spree
 
     # Regression test for https://github.com/spree/spree/issues/3404
     it "can specify additional parameters for a line item" do
-      expect(Order).to receive(:create!).and_return(order = Spree::Order.new)
-      allow(order).to receive(:associate_user!)
-      allow(order).to receive_message_chain(:contents, :add).and_return(line_item = double('LineItem'))
-      expect(line_item).to receive(:update_attributes!).with(hash_including("special" => "foo"))
+      expect_any_instance_of(Spree::LineItem).to receive(:special=).with("foo")
 
       allow_any_instance_of(Spree::Api::OrdersController).to receive_messages(permitted_line_item_attributes: [:id, :variant_id, :quantity, :special])
       post spree.api_orders_path, params: {
@@ -501,7 +575,7 @@ module Spree
       context "order has shipments" do
         before { order.create_proposed_shipments }
 
-        it "clears out all existing shipments on line item udpate" do
+        it "clears out all existing shipments on line item update" do
           put spree.api_order_path(order), params: { order: {
             line_items: {
               0 => { id: line_item.id, quantity: 10 }
@@ -513,6 +587,7 @@ module Spree
 
       context "with a line item" do
         let(:order) { create(:order_with_line_items) }
+        let(:line_item) { order.line_items.first }
 
         it "can empty an order" do
           create(:adjustment, order: order, adjustable: order)
@@ -575,7 +650,7 @@ module Spree
 
         context "when in delivery" do
           let!(:shipping_method) do
-            FactoryGirl.create(:shipping_method).tap do |shipping_method|
+            FactoryBot.create(:shipping_method).tap do |shipping_method|
               shipping_method.calculator.preferred_amount = 10
               shipping_method.calculator.save
             end
@@ -784,7 +859,7 @@ module Spree
           expect(response.status).to eq 200
           expect(order.reload.promotions).to eq [promo]
           expect(json_response).to eq({
-            "success" => Spree.t(:coupon_code_applied),
+            "success" => I18n.t('spree.coupon_code_applied'),
             "error" => nil,
             "successful" => true,
             "status_code" => "coupon_code_applied"
@@ -802,7 +877,7 @@ module Spree
           expect(order.reload.promotions).to eq []
           expect(json_response).to eq({
             "success" => nil,
-            "error" => Spree.t(:coupon_code_unknown_error),
+            "error" => I18n.t('spree.coupon_code_unknown_error'),
             "successful" => false,
             "status_code" => "coupon_code_unknown_error"
           })

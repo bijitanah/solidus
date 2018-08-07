@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Spree::Admin::CancellationsController do
@@ -33,7 +35,7 @@ describe Spree::Admin::CancellationsController do
 
       it "sets an error message" do
         subject
-        expect(flash[:error]).to eq Spree.t(:no_inventory_selected)
+        expect(flash[:error]).to eq I18n.t('spree.no_inventory_selected')
       end
     end
 
@@ -47,7 +49,7 @@ describe Spree::Admin::CancellationsController do
 
       it "sets an error message" do
         subject
-        expect(flash[:error]).to eq Spree.t(:unable_to_find_all_inventory_units)
+        expect(flash[:error]).to eq I18n.t('spree.unable_to_find_all_inventory_units')
       end
     end
 
@@ -61,7 +63,7 @@ describe Spree::Admin::CancellationsController do
 
       it "sets an success message" do
         subject
-        expect(flash[:success]).to eq Spree.t(:inventory_canceled)
+        expect(flash[:success]).to eq I18n.t('spree.inventory_canceled')
       end
 
       it "creates a unit cancel" do

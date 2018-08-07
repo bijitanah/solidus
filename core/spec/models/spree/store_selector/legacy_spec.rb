@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::StoreSelector::Legacy do
+require 'rails_helper'
+
+RSpec.describe Spree::StoreSelector::Legacy do
   describe "#store" do
     subject { described_class.new(request).store }
 

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spree/testing_support/factories/stock_item_factory'
 
-FactoryGirl.define do
-  factory :stock_movement, class: Spree::StockMovement do
+FactoryBot.define do
+  factory :stock_movement, class: 'Spree::StockMovement' do
     quantity 1
     action 'sold'
     stock_item

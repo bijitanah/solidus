@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   # An implementation of a `Spree::PaymentMethod` for credit card payments.
   #
@@ -8,11 +10,11 @@ module Spree
   #
   class PaymentMethod::CreditCard < PaymentMethod
     def payment_source_class
-      CreditCard
+      Spree::CreditCard
     end
 
     def partial_name
-      'gateway'
+      deprecated_method_type_override || 'gateway'
     end
 
     def supports?(source)

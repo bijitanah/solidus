@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Reimbursement, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Reimbursement, type: :model do
   describe ".before_create" do
     describe "#generate_number" do
       context "number is assigned" do
@@ -53,7 +55,7 @@ describe Spree::Reimbursement, type: :model do
     let(:shipping_method)         { create :shipping_method, zones: [tax_zone] }
     let(:variant)                 { create :variant }
     let(:order)                   { create(:order_with_line_items, state: 'payment', line_items_attributes: [{ variant: variant, price: line_items_price }], shipment_cost: 0, shipping_method: shipping_method) }
-    let(:line_items_price)        { BigDecimal.new(10) }
+    let(:line_items_price)        { BigDecimal(10) }
     let(:line_item)               { order.line_items.first }
     let(:inventory_unit)          { line_item.inventory_units.first }
     let(:payment)                 { build(:payment, amount: payment_amount, order: order, state: 'checkout') }
@@ -121,8 +123,8 @@ describe Spree::Reimbursement, type: :model do
         return_item.reload
         expect(return_item.included_tax_total).to be > 0
         expect(return_item.included_tax_total).to eq line_item.included_tax_total
-        expect(reimbursement.total).to eq((line_item.pre_tax_amount + line_item.included_tax_total).round(2, :down))
-        expect(Spree::Refund.last.amount).to eq((line_item.pre_tax_amount + line_item.included_tax_total).round(2, :down))
+        expect(reimbursement.total).to eq((line_item.total_excluding_vat + line_item.included_tax_total).round(2, :down))
+        expect(Spree::Refund.last.amount).to eq((line_item.total_excluding_vat + line_item.included_tax_total).round(2, :down))
       end
     end
 

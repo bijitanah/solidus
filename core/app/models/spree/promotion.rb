@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class Promotion < Spree::Base
     MATCH_POLICIES = %w(all any)
@@ -237,8 +239,7 @@ module Spree
       when Spree::LineItem
         !promotable.product.promotionable?
       when Spree::Order
-        promotable.line_items.any? &&
-          promotable.line_items.joins(:product).where(spree_products: { promotionable: false }).any?
+        promotable.line_items.joins(:product).where(spree_products: { promotionable: false }).exists?
       end
     end
 

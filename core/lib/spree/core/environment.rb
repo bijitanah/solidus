@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'spree/core/environment_extension'
+
 module Spree
   module Core
     class Environment
@@ -8,9 +12,9 @@ module Spree
 
       attr_accessor :calculators, :preferences, :promotions
 
-      def initialize
+      def initialize(spree_config)
         @calculators = Calculators.new
-        @preferences = Spree::AppConfiguration.new
+        @preferences = spree_config
         @promotions = Spree::Promo::Environment.new
       end
     end

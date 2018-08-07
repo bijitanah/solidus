@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::WalletPaymentSource, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::WalletPaymentSource, type: :model do
   subject { Spree::WalletPaymentSource }
 
   describe "validation" do

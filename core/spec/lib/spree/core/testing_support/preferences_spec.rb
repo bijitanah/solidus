@@ -1,4 +1,6 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require 'rails_helper'
 
 RSpec.describe Spree::TestingSupport::Preferences do
   describe 'resetting the app configuration' do

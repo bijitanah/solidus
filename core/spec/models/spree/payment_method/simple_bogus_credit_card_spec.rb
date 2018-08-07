@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::PaymentMethod::SimpleBogusCreditCard, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::PaymentMethod::SimpleBogusCreditCard, type: :model do
   subject { Spree::PaymentMethod::SimpleBogusCreditCard.new }
 
   # regression test for https://github.com/spree/spree/issues/3824

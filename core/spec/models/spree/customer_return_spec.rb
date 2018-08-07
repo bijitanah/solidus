@@ -1,13 +1,15 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::CustomerReturn, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::CustomerReturn, type: :model do
   before do
     allow_any_instance_of(Spree::Order).to receive_messages(return!: true)
   end
 
   describe ".validation" do
     describe "#return_items_belong_to_same_order" do
-      let(:customer_return)       { build(:customer_return) }
+      let(:customer_return) { build(:customer_return) }
 
       let(:first_order) { create(:order_with_line_items) }
       let(:second_order) { first_order }
@@ -37,7 +39,7 @@ describe Spree::CustomerReturn, type: :model do
 
         it "adds an error message" do
           subject
-          expect(customer_return.errors.full_messages).to include(Spree.t(:return_items_cannot_be_associated_with_multiple_orders))
+          expect(customer_return.errors.full_messages).to include(I18n.t('spree.return_items_cannot_be_associated_with_multiple_orders'))
         end
       end
 
@@ -213,7 +215,12 @@ describe Spree::CustomerReturn, type: :model do
       end
 
       it "should NOT raise an error when no stock item exists in the stock location" do
-        inventory_unit.find_stock_item.destroy
+        inventory_unit.find_stock_item.really_destroy!
+        create(:customer_return_without_return_items, return_items: [return_item], stock_location_id: new_stock_location.id)
+      end
+
+      it "should NOT raise an error when a soft-deleted stock item exists in the stock location" do
+        inventory_unit.find_stock_item.discard
         create(:customer_return_without_return_items, return_items: [return_item], stock_location_id: new_stock_location.id)
       end
 

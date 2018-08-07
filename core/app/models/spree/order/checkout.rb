@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class Order < Spree::Base
     module Checkout
@@ -6,10 +8,10 @@ module Spree
       end
 
       module ClassMethods
-        attr_accessor :next_event_transitions
         attr_accessor :previous_states
-        attr_accessor :checkout_steps
-        attr_accessor :removed_transitions
+        attr_writer :next_event_transitions
+        attr_writer :checkout_steps
+        attr_writer :removed_transitions
 
         def checkout_flow(&block)
           if block_given?
@@ -98,7 +100,7 @@ module Spree
               before_transition to: :delivery, do: :ensure_shipping_address
               before_transition to: :delivery, do: :create_proposed_shipments
               before_transition to: :delivery, do: :ensure_available_shipping_rates
-              before_transition from: :delivery, do: :apply_free_shipping_promotions
+              before_transition from: :delivery, do: :apply_shipping_promotions
             end
 
             before_transition to: :resumed, do: :ensure_line_item_variants_are_not_deleted

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Core
     module Importer
@@ -69,7 +71,6 @@ module Spree
               # trying to view these units. Note the Importer might not be
               # able to find the line item if line_item.variant_id |= iu.variant_id
               shipment.inventory_units.new(
-                order: order,
                 variant_id: iu[:variant_id],
                 line_item: line_item
               )

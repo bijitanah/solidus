@@ -1,7 +1,9 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::AppConfiguration, type: :model do
-  let(:prefs) { Rails.application.config.spree.preferences }
+require 'rails_helper'
+
+RSpec.describe Spree::AppConfiguration, type: :model do
+  let(:prefs) { Spree::Config }
 
   it "should be available from the environment" do
     prefs.layout = "my/layout"

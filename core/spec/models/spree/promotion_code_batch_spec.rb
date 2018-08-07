@@ -1,6 +1,8 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe Spree::PromotionCodeBatch, type: :model do
+require "rails_helper"
+
+RSpec.describe Spree::PromotionCodeBatch, type: :model do
   subject do
     described_class.create!(
       promotion_id: create(:promotion).id,

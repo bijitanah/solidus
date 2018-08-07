@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class ReportsController < Spree::Admin::BaseController
@@ -12,7 +14,11 @@ module Spree
           if report_description_key.nil?
             report_description_key = "#{report_key}_description"
           end
-          @@available_reports[report_key] = { name: Spree.t(report_key), description: Spree.t(report_description_key) }
+
+          @@available_reports[report_key] = {
+            name: report_key,
+            description: report_description_key,
+          }
         end
       end
 
@@ -28,7 +34,7 @@ module Spree
       def sales_total
         params[:q] = search_params
 
-        @search = Order.complete.ransack(params[:q])
+        @search = Order.complete.not_canceled.ransack(params[:q])
         @orders = @search.result
 
         @totals = {}

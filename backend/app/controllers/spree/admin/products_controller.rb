@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class ProductsController < ResourceController
@@ -47,9 +49,9 @@ module Spree
 
       def destroy
         @product = Spree::Product.friendly.find(params[:id])
-        @product.destroy
+        @product.discard
 
-        flash[:success] = Spree.t('notice_messages.product_deleted')
+        flash[:success] = t('spree.notice_messages.product_deleted')
 
         respond_with(@product) do |format|
           format.html { redirect_to collection_url }
@@ -61,9 +63,9 @@ module Spree
         @new = @product.duplicate
 
         if @new.save
-          flash[:success] = Spree.t('notice_messages.product_cloned')
+          flash[:success] = t('spree.notice_messages.product_cloned')
         else
-          flash[:error] = Spree.t('notice_messages.product_not_cloned')
+          flash[:error] = t('spree.notice_messages.product_not_cloned')
         end
 
         redirect_to edit_admin_product_url(@new)
@@ -89,8 +91,6 @@ module Spree
       end
 
       def load_data
-        @taxons = Spree::Taxon.order(:name)
-        @option_types = Spree::OptionType.order(:name)
         @tax_categories = Spree::TaxCategory.order(:name)
         @shipping_categories = Spree::ShippingCategory.order(:name)
       end

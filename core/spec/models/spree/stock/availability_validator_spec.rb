@@ -1,8 +1,10 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require 'rails_helper'
 
 module Spree
   module Stock
-    describe AvailabilityValidator do
+    RSpec.describe AvailabilityValidator do
       let(:validator) { Spree::Stock::AvailabilityValidator.new }
 
       subject { validator.validate(line_item) }

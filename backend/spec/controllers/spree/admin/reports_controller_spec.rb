@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Spree::Admin::ReportsController, type: :controller do
@@ -7,24 +9,16 @@ describe Spree::Admin::ReportsController, type: :controller do
     it 'should contain sales_total' do
       expect(Spree::Admin::ReportsController.available_reports.keys.include?(:sales_total)).to be true
     end
-
-    it 'should have the proper sales total report description' do
-      expect(Spree::Admin::ReportsController.available_reports[:sales_total][:description]).to eql('Sales Total For All Orders')
-    end
   end
 
   describe 'ReportsController.add_available_report!' do
     context 'when adding the report name' do
       it 'should contain the report' do
-        I18n.backend.store_translations(:en, spree: {
-          some_report: 'Awesome Report',
-          some_report_description: 'This report is great!'
-        })
         Spree::Admin::ReportsController.add_available_report!(:some_report)
         expect(Spree::Admin::ReportsController.available_reports.keys.include?(:some_report)).to be true
         expect(Spree::Admin::ReportsController.available_reports[:some_report]).to eq(
-          name: 'Awesome Report',
-          description: 'This report is great!'
+          name: :some_report,
+          description: 'some_report_description'
         )
       end
     end
@@ -48,7 +42,7 @@ describe Spree::Admin::ReportsController, type: :controller do
 
     shared_examples 'sales total report' do
       it 'should respond with success' do
-        expect(response).to be_success
+        expect(response).to be_successful
       end
 
       it 'should set search to be a ransack search' do

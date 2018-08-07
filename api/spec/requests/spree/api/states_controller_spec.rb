@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
   describe Api::StatesController, type: :request do
-
     let!(:state) { create(:state, name: "Victoria") }
     let(:attributes) { [:id, :name, :abbr, :country_id] }
 
@@ -27,6 +28,7 @@ module Spree
         create(:state)
         get spree.api_states_path, params: { page: 2, per_page: 1 }
 
+        expect(json_response).to be_paginated
         expect(json_response["states"].size).to eq(1)
         expect(json_response["pages"]).to eq(2)
         expect(json_response["current_page"]).to eq(2)

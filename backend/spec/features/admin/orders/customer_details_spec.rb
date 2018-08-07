@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "Customer Details", type: :feature, js: true do
@@ -48,13 +50,20 @@ describe "Customer Details", type: :feature, js: true do
       expect(Spree::Order.last.user).not_to be_nil
     end
 
+    # Regression test for https://github.com/solidusio/solidus/pull/2176
+    it "does not reset guest checkout to true when returning to customer tab" do
+      click_button "Update"
+      click_link "Customer"
+      expect(find('#guest_checkout_true')).not_to be_checked
+    end
+
     context "when required quantity is more than available" do
       let(:quantity) { 11 }
       let!(:product) { create(:product_not_backorderable) }
 
       it "displays an error" do
         click_button "Update"
-        expect(page).to have_content Spree.t(:insufficient_stock_for_order)
+        expect(page).to have_content I18n.t('spree.insufficient_stock_for_order')
       end
     end
   end
@@ -103,7 +112,7 @@ describe "Customer Details", type: :feature, js: true do
       # Regression test for https://github.com/spree/spree/issues/2950 and https://github.com/spree/spree/issues/2433
       # This act should transition the state of the order as far as it will go too
       within("#order_tab_summary") do
-        expect(find("dt#order_status + dd")).to have_content("complete")
+        expect(find("dt#order_status + dd")).to have_content("Complete")
       end
     end
 
@@ -114,14 +123,29 @@ describe "Customer Details", type: :feature, js: true do
       expect(page).to have_content("Shipping address first name can't be blank")
     end
 
-    it "updates order email for an existing order with a user" do
-      order.update_columns(ship_address_id: ship_address.id, bill_address_id: bill_address.id, state: "confirm", completed_at: nil)
-      previous_user = order.user
-      click_link "Customer"
-      fill_in "order_email", with: "newemail@example.com"
-      expect { click_button "Update" }.to change { order.reload.email }.to "newemail@example.com"
-      expect(order.user_id).to eq previous_user.id
-      expect(order.user.email).to eq previous_user.email
+    context "for an order in confirm state with a user" do
+      let(:user) { order.user }
+
+      before do
+        order.update_columns(
+          ship_address_id: ship_address.id,
+          bill_address_id: bill_address.id,
+          state: "confirm",
+          completed_at: nil
+        )
+      end
+
+      it "updating order email works" do
+        click_link "Customer"
+        fill_in "order_email", with: "newemail@example.com"
+        click_button "Update"
+        expect(page).to have_content 'Customer Details Updated'
+        click_link "Customer"
+        expect(page).to have_field 'Customer E-Mail', with: order.reload.email
+        within '#order_user_link' do
+          expect(page).to have_link user.email
+        end
+      end
     end
 
     context "country associated was removed" do
@@ -177,6 +201,6 @@ describe "Customer Details", type: :feature, js: true do
     fill_in "City",                    with: "Bethesda"
     fill_in "Zip Code",                with: "20170"
     select 'Alabama', from: "State"
-    fill_in "Phone",                   with: "123-456-7890"
+    fill_in "Phone", with: "123-456-7890"
   end
 end

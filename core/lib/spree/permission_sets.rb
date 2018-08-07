@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spree/permission_sets/base'
 require 'spree/permission_sets/configuration_display'
 require 'spree/permission_sets/configuration_management'
@@ -12,12 +14,8 @@ require 'spree/permission_sets/promotion_management'
 require 'spree/permission_sets/report_display'
 require 'spree/permission_sets/restricted_stock_display'
 require 'spree/permission_sets/restricted_stock_management'
-require 'spree/permission_sets/restricted_stock_transfer_display'
-require 'spree/permission_sets/restricted_stock_transfer_management'
 require 'spree/permission_sets/stock_display'
 require 'spree/permission_sets/stock_management'
-require 'spree/permission_sets/stock_transfer_display'
-require 'spree/permission_sets/stock_transfer_management'
 require 'spree/permission_sets/super_user'
 require 'spree/permission_sets/user_display'
 require 'spree/permission_sets/user_management'

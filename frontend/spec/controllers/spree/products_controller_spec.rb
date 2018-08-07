@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Spree::ProductsController, type: :controller do
@@ -11,8 +13,9 @@ describe Spree::ProductsController, type: :controller do
   end
 
   it "cannot view non-active products" do
-    get :show, params: { id: product.to_param }
-    expect(response.status).to eq(404)
+    expect {
+      get :show, params: { id: product.to_param }
+    }.to raise_error(ActiveRecord::RecordNotFound)
   end
 
   it "should provide the current user to the searcher class" do

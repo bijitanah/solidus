@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class PromotionChooser
     def initialize(adjustments)
@@ -12,11 +14,11 @@ module Spree
       if best_promotion_adjustment
         @adjustments.select(&:eligible?).each do |adjustment|
           next if adjustment == best_promotion_adjustment
-          adjustment.update_columns(eligible: false)
+          adjustment.update_columns(eligible: false, updated_at: Time.current)
         end
         best_promotion_adjustment.amount
       else
-        BigDecimal.new('0')
+        BigDecimal('0')
       end
     end
 

@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
   describe Api::TaxonomiesController, type: :request do
-
     let(:taxonomy) { create(:taxonomy) }
     let(:taxon) { create(:taxon, name: "Ruby", taxonomy: taxonomy) }
     let(:taxon2) { create(:taxon, name: "Rails", taxonomy: taxonomy) }
@@ -59,6 +60,7 @@ module Spree
       end
 
       it "gets the jstree-friendly version of a taxonomy" do
+        expect(Spree::Deprecation).to(receive(:warn))
         get spree.jstree_api_taxonomy_path(taxonomy.id)
         expect(json_response["data"]).to eq(taxonomy.root.name)
         expect(json_response["attr"]).to eq({ "id" => taxonomy.root.id, "name" => taxonomy.root.name })

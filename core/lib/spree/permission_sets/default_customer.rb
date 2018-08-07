@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module PermissionSets
     class DefaultCustomer < PermissionSets::Base
@@ -8,6 +10,9 @@ module Spree
         can :create, Order
         can [:read, :update], Order do |order, token|
           order.user == user || (order.guest_token.present? && token == order.guest_token)
+        end
+        cannot :update, Order do |order|
+          order.completed?
         end
         can :create, ReturnAuthorization do |return_authorization|
           return_authorization.order.user == user

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'carmen'
 
-FactoryGirl.define do
-  factory :country, class: Spree::Country do
+FactoryBot.define do
+  factory :country, class: 'Spree::Country' do
     iso 'US'
 
     transient do

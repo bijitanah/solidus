@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Tax::ShippingRateTaxer do
+require 'rails_helper'
+
+RSpec.describe Spree::Tax::ShippingRateTaxer do
   let(:shipping_rate) { build_stubbed(:shipping_rate) }
 
   subject(:taxer) { described_class.new(shipping_rate) }

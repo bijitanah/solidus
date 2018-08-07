@@ -1,6 +1,8 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe Spree::Variant::VatPriceGenerator do
+require "rails_helper"
+
+RSpec.describe Spree::Variant::VatPriceGenerator do
   let(:tax_category) { create(:tax_category) }
   let(:product) { variant.product }
   let(:variant) { create(:variant, price: 10, tax_category: tax_category) }
@@ -35,7 +37,7 @@ describe Spree::Variant::VatPriceGenerator do
 
     # We need to remove the price for FR from the database so it is created in memory, and then run VatPriceGenerator twice to trigger the duplicate price issue.
     it "will not build duplicate prices on multiple runs" do
-      variant.prices.where(country_iso: "FR").destroy_all
+      variant.prices.where(country_iso: "FR").each(&:really_destroy!)
       variant.reload
       described_class.new(variant).run
       expect { subject }.not_to change { variant.prices.size }

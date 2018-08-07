@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "New Order", type: :feature do
@@ -22,6 +24,12 @@ describe "New Order", type: :feature do
     click_on "Shipments"
     expect(page).to have_content 'Please fill in customer info'
     expect(current_path).to eql(spree.edit_admin_order_customer_path(Spree::Order.last))
+  end
+
+  it "default line item quantity is 1", js: true do
+    within ".line-items" do
+      expect(page).to have_field 'quantity', with: '1'
+    end
   end
 
   it "completes new order succesfully without using the cart", js: true do
@@ -54,7 +62,7 @@ describe "New Order", type: :feature do
     click_on "Ship"
 
     within '.carton-state' do
-      expect(page).to have_content('shipped')
+      expect(page).to have_content('Shipped')
     end
   end
 
@@ -146,7 +154,7 @@ describe "New Order", type: :feature do
       click_on "Update"
 
       # Automatically redirected to Shipments page
-      select2_search product.name, from: Spree.t(:name_or_sku)
+      select2_search product.name, from: I18n.t('spree.name_or_sku')
 
       click_icon :plus
 
@@ -155,8 +163,8 @@ describe "New Order", type: :feature do
       click_on "Payments"
       click_on "Continue"
 
-      within(".additional-info .state") do
-        expect(page).to have_content("confirm")
+      within(".additional-info") do
+        expect(page).to have_content("Confirm")
       end
     end
   end
@@ -177,7 +185,7 @@ describe "New Order", type: :feature do
       click_link "Customer"
       targetted_select2 user.email, from: "#s2id_customer_search"
       click_button "Update"
-      expect(Spree::Order.last.state).to eq 'delivery'
+      expect(page).to have_css('.order-state', text: 'Delivery')
     end
   end
 
@@ -201,6 +209,6 @@ describe "New Order", type: :feature do
     fill_in "City",                      with: "Bethesda"
     fill_in "Zip Code",                  with: "20170"
     select state.name, from: "State"
-    fill_in "Phone",                     with: "123-456-7890"
+    fill_in "Phone", with: "123-456-7890"
   end
 end

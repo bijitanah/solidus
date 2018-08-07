@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "Log entries", type: :feature do
@@ -14,7 +16,6 @@ describe "Log entries", type: :feature do
       )
 
       payment.log_entries.create(
-        source: payment.source,
         details: response.to_yaml
       )
     end

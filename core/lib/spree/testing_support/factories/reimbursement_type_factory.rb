@@ -1,5 +1,7 @@
-FactoryGirl.define do
-  factory :reimbursement_type, class: Spree::ReimbursementType do
+# frozen_string_literal: true
+
+FactoryBot.define do
+  factory :reimbursement_type, class: 'Spree::ReimbursementType' do
     sequence(:name) { |n| "Reimbursement Type #{n}" }
     active true
     mutable true

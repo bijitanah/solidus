@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   module Admin
     class StyleGuideController < Spree::Admin::BaseController
@@ -10,8 +12,7 @@ module Spree
             'fonts',
             'colors',
             'lists',
-            'icons',
-            'tags'
+            'icons'
           ],
           forms: [
             'building_forms',
@@ -22,6 +23,8 @@ module Spree
             'validation'
           ],
           components: [
+            'pills',
+            'modals',
             'tabs'
           ],
           messaging: [

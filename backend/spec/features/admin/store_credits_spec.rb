@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "Store credits admin" do
@@ -23,7 +25,7 @@ describe "Store credits admin" do
       click_link "Store Credit"
       expect(page.current_path).to eq spree.admin_user_store_credits_path(store_credit.user)
 
-      store_credit_table = page.find("#sc-table")
+      store_credit_table = page.find(".sc-table")
       expect(store_credit_table).to have_css('tr', count: 1)
       expect(store_credit_table).to have_content(Spree::Money.new(store_credit.amount).to_s)
       expect(store_credit_table).to have_content(Spree::Money.new(store_credit.amount_used).to_s)
@@ -48,7 +50,7 @@ describe "Store credits admin" do
       click_button "Create"
 
       expect(page.current_path).to eq spree.admin_user_store_credits_path(store_credit.user)
-      store_credit_table = page.find("#sc-table")
+      store_credit_table = page.find(".sc-table")
       expect(store_credit_table).to have_css('tr', count: 2)
       expect(Spree::StoreCredit.count).to eq 2
     end
@@ -67,7 +69,7 @@ describe "Store credits admin" do
     end
 
     it "updates the store credit's amount" do
-      page.find("#sc-table td.actions a.fa-edit").click
+      page.find(".sc-table td.actions a.fa-edit").click
       expect(page).to have_content 'Store credit history'
       click_link "Change amount"
       expect(page).to have_content 'Editing store credit amount'

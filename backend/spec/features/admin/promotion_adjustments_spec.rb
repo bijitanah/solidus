@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe "Promotion Adjustments", type: :feature, js: true do
@@ -5,18 +7,16 @@ describe "Promotion Adjustments", type: :feature, js: true do
 
   context "creating a new promotion", js: true do
     before(:each) do
-      visit spree.admin_path
-      click_link "Promotions"
-      click_link "New Promotion"
+      visit spree.new_admin_promotion_path
       expect(page).to have_title("New Promotion - Promotions")
     end
 
     it "should allow an admin to create a flat rate discount coupon promo" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       fill_in "Promotion Code", with: "order"
 
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Item total", from: "Add rule of type"
       within('#rule_fields') { click_button "Add" }
@@ -25,14 +25,15 @@ describe "Promotion Adjustments", type: :feature, js: true do
       within('#rule_fields') { click_button "Update" }
 
       select "Create whole-order adjustment", from: "Add action of type"
-      within('#action_fields') { click_button "Add" }
-      select "Flat Rate", from: "Base Calculator"
+      within('#action_fields') do
+        click_button "Add"
+        select "Flat Rate", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        fill_in "Amount", with: 5
+      end
       within('#actions_container') { click_button "Update" }
+      expect(page).to have_text 'successfully updated'
 
-      within('.calculator-fields') { fill_in "Amount", with: 5 }
-      within('#actions_container') { click_button "Update" }
-
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.codes.first.value).to eq("order")
 
       first_rule = promotion.rules.first
@@ -47,21 +48,23 @@ describe "Promotion Adjustments", type: :feature, js: true do
     end
 
     it "should allow an admin to create a single user coupon promo with flat rate discount" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       fill_in "promotion[usage_limit]", with: "1"
       fill_in "Promotion Code", with: "single_use"
 
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Create whole-order adjustment", from: "Add action of type"
-      within('#action_fields') { click_button "Add" }
-      select "Flat Rate", from: "Base Calculator"
+      within('#action_fields') do
+        click_button "Add"
+        select "Flat Rate", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        fill_in "Amount", with: "5"
+      end
       within('#actions_container') { click_button "Update" }
-      within('#action_fields') { fill_in "Amount", with: "5" }
-      within('#actions_container') { click_button "Update" }
+      expect(page).to have_text 'successfully updated'
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.usage_limit).to eq(1)
       expect(promotion.codes.first.value).to eq("single_use")
 
@@ -73,10 +76,10 @@ describe "Promotion Adjustments", type: :feature, js: true do
     end
 
     it "should allow an admin to create an automatic promo with flat percent discount" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Apply to all orders"
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Item total", from: "Add rule of type"
       within('#rule_fields') { click_button "Add" }
@@ -85,13 +88,15 @@ describe "Promotion Adjustments", type: :feature, js: true do
       within('#rule_fields') { click_button "Update" }
 
       select "Create whole-order adjustment", from: "Add action of type"
-      within('#action_fields') { click_button "Add" }
-      select "Flat Percent", from: "Base Calculator"
+      within('#action_fields') do
+        click_button "Add"
+        select "Flat Percent", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        fill_in "Flat Percent", with: "10"
+      end
       within('#actions_container') { click_button "Update" }
-      within('.calculator-fields') { fill_in "Flat Percent", with: "10" }
-      within('#actions_container') { click_button "Update" }
+      expect(page).to have_text 'successfully updated'
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.codes.first).to be_nil
 
       first_rule = promotion.rules.first
@@ -108,10 +113,10 @@ describe "Promotion Adjustments", type: :feature, js: true do
     it "should allow an admin to create an product promo with percent per item discount" do
       create(:product, name: "RoR Mug")
 
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Apply to all orders"
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Product(s)", from: "Add rule of type"
       within("#rule_fields") { click_button "Add" }
@@ -119,13 +124,15 @@ describe "Promotion Adjustments", type: :feature, js: true do
       within('#rule_fields') { click_button "Update" }
 
       select "Create per-line-item adjustment", from: "Add action of type"
-      within('#action_fields') { click_button "Add" }
-      select "Percent Per Item", from: "Base Calculator"
+      within('#action_fields') do
+        click_button "Add"
+        select "Percent Per Item", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        fill_in "Percent", with: "10"
+      end
       within('#actions_container') { click_button "Update" }
-      within('.calculator-fields') { fill_in "Percent", with: "10" }
-      within('#actions_container') { click_button "Update" }
+      expect(page).to have_text 'successfully updated'
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.codes.first).to be_nil
 
       first_rule = promotion.rules.first
@@ -140,10 +147,10 @@ describe "Promotion Adjustments", type: :feature, js: true do
     end
 
     it "should allow an admin to create an automatic promotion with free shipping (no code)" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Apply to all orders"
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Item total", from: "Add rule of type"
       within('#rule_fields') { click_button "Add" }
@@ -154,48 +161,37 @@ describe "Promotion Adjustments", type: :feature, js: true do
       within('#action_fields') { click_button "Add" }
       expect(page).to have_content('Makes all shipments for the order free')
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.codes).to be_empty
       expect(promotion.rules.first).to be_a(Spree::Promotion::Rules::ItemTotal)
       expect(promotion.actions.first).to be_a(Spree::Promotion::Actions::FreeShipping)
     end
 
     it "should allow an admin to create an automatic promotion" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Apply to all orders"
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion).to be_apply_automatically
       expect(promotion.path).to be_nil
       expect(promotion.codes).to be_empty
       expect(promotion.rules).to be_blank
     end
 
-    it "should allow an admin to create a promo requiring a landing page to be visited" do
-      fill_in "Name", with: "Promotion"
-      choose "URL Path"
-      fill_in "Path", with: "content/cvv"
-      click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
-
-      promotion = Spree::Promotion.find_by(name: "Promotion")
-      expect(promotion.path).to eq("content/cvv")
-      expect(promotion).not_to be_apply_automatically
-      expect(promotion.codes).to be_empty
-      expect(promotion.rules).to be_blank
-    end
-
     it "should allow an admin to create a promo with generated codes" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Multiple promotion codes"
       fill_in "Base code", with: "testing"
       fill_in "Number of codes", with: "10"
-      click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      perform_enqueued_jobs {
+        click_button "Create"
+        expect(page).to have_title("SAVE SAVE SAVE - Promotions")
+      }
+
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
       expect(promotion.path).to be_nil
       expect(promotion).not_to be_apply_automatically
       expect(promotion.rules).to be_blank
@@ -204,10 +200,10 @@ describe "Promotion Adjustments", type: :feature, js: true do
     end
 
     it "ceasing to be eligible for a promotion with item total rule then becoming eligible again" do
-      fill_in "Name", with: "Promotion"
+      fill_in "Name", with: "SAVE SAVE SAVE"
       choose "Apply to all orders"
       click_button "Create"
-      expect(page).to have_title("Promotion - Promotions")
+      expect(page).to have_title("SAVE SAVE SAVE - Promotions")
 
       select "Item total", from: "Add rule of type"
       within('#rule_fields') { click_button "Add" }
@@ -215,13 +211,15 @@ describe "Promotion Adjustments", type: :feature, js: true do
       within('#rule_fields') { click_button "Update" }
 
       select "Create whole-order adjustment", from: "Add action of type"
-      within('#action_fields') { click_button "Add" }
-      select "Flat Rate", from: "Base Calculator"
+      within('#action_fields') do
+        click_button "Add"
+        select "Flat Rate", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        fill_in "Amount", with: "5"
+      end
       within('#actions_container') { click_button "Update" }
-      within('.calculator-fields') { fill_in "Amount", with: "5" }
-      within('#actions_container') { click_button "Update" }
+      expect(page).to have_text 'successfully updated'
 
-      promotion = Spree::Promotion.find_by(name: "Promotion")
+      promotion = Spree::Promotion.find_by(name: "SAVE SAVE SAVE")
 
       first_rule = promotion.rules.first
       expect(first_rule.class).to eq(Spree::Promotion::Rules::ItemTotal)
@@ -231,6 +229,49 @@ describe "Promotion Adjustments", type: :feature, js: true do
       expect(first_action.class).to eq(Spree::Promotion::Actions::CreateAdjustment)
       expect(first_action.calculator.class).to eq(Spree::Calculator::FlatRate)
       expect(first_action.calculator.preferred_amount).to eq(5)
+    end
+
+    context 'creating a promotion with promotion action that has a calculator with complex preferences' do
+      before do
+        class ComplexCalculator < Spree::Calculator
+          preference :amount, :decimal
+          preference :currency, :string
+          preference :mapping, :hash
+          preference :list, :array
+
+          def self.description
+            "Complex Calculator"
+          end
+        end
+        @calculators = Rails.application.config.spree.calculators.promotion_actions_create_item_adjustments
+        Rails.application.config.spree.calculators.promotion_actions_create_item_adjustments = [ComplexCalculator]
+      end
+
+      after do
+        Rails.application.config.spree.calculators.promotion_actions_create_item_adjustments = @calculators
+      end
+
+      it "does not show array and hash form fields" do
+        fill_in "Name", with: "SAVE SAVE SAVE"
+        choose "Apply to all orders"
+        click_button "Create"
+        expect(page).to have_title("SAVE SAVE SAVE - Promotions")
+
+        select "Create per-line-item adjustment", from: "Add action of type"
+        within('#action_fields') do
+          click_button "Add"
+          select "Complex Calculator", from: I18n.t('spree.admin.promotions.actions.calculator_label')
+        end
+        within('#actions_container') { click_button "Update" }
+        expect(page).to have_text 'successfully updated'
+
+        within('#action_fields') do
+          expect(page).to have_field('Amount')
+          expect(page).to have_field('Currency')
+          expect(page).to_not have_field('Mapping')
+          expect(page).to_not have_field('List')
+        end
+      end
     end
   end
 end

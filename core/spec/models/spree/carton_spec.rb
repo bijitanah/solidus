@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Carton do
+require 'rails_helper'
+
+RSpec.describe Spree::Carton do
   let(:carton) { create(:carton) }
 
   describe "#create" do

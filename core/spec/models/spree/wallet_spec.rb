@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Wallet, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Wallet, type: :model do
   let(:user) { create(:user) }
   let(:credit_card) { create(:credit_card, user_id: user.id) }
   let(:store_credit) { create(:store_credit, user_id: user.id) }

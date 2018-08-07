@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class CartonMailer < BaseMailer
     # Send an email to customers to notify that an individual carton has been
@@ -13,14 +15,14 @@ module Spree
     # Note: The signature of this method has changed. The new (non-deprecated)
     # signature is:
     #   def shipped_email(carton:, order:, resend: false)
-    def shipped_email(options, deprecated_options = {})
+    def shipped_email(options, _deprecated_options = {})
       @order = options.fetch(:order)
       @carton = options.fetch(:carton)
       @manifest = @carton.manifest_for_order(@order)
       options = { resend: false }.merge(options)
       @store = @order.store
-      subject = (options[:resend] ? "[#{Spree.t(:resend).upcase}] " : '')
-      subject += "#{@store.name} #{Spree.t('shipment_mailer.shipped_email.subject')} ##{@order.number}"
+      subject = (options[:resend] ? "[#{t('spree.resend').upcase}] " : '')
+      subject += "#{@store.name} #{t('spree.shipment_mailer.shipped_email.subject')} ##{@order.number}"
       mail(to: @order.email, from: from_address(@store), subject: subject)
     end
   end

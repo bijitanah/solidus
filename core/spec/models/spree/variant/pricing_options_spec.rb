@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Variant::PricingOptions do
+require 'rails_helper'
+
+RSpec.describe Spree::Variant::PricingOptions do
   subject { described_class.new }
 
   context '.default_price_attributes' do

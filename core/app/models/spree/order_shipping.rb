@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A service layer that handles generating Carton objects when inventory units
 # are actually shipped.  It also takes care of things like updating order and
 # shipment states and delivering shipment emails as needed.
@@ -72,17 +74,12 @@ class Spree::OrderShipping
     end
 
     send_shipment_emails(carton) if stock_location.fulfillable? && !suppress_mailer # e.g. digital gift cards that aren't actually shipped
-    fulfill_order_stock_locations(stock_location)
     @order.recalculate
 
     carton
   end
 
   private
-
-  def fulfill_order_stock_locations(stock_location)
-    Spree::OrderStockLocation.fulfill_for_order_with_stock_location(@order, stock_location)
-  end
 
   def send_shipment_emails(carton)
     carton.orders.each do |order|

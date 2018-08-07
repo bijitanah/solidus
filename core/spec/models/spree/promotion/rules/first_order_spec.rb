@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Promotion::Rules::FirstOrder, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Promotion::Rules::FirstOrder, type: :model do
   let(:rule) { Spree::Promotion::Rules::FirstOrder.new }
   let(:order) { mock_model(Spree::Order, user: nil, email: nil) }
   let(:user) { mock_model(Spree::LegacyUser) }

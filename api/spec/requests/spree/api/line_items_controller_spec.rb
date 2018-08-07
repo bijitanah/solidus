@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 module Spree
@@ -10,7 +12,6 @@ module Spree
   end
 
   describe Api::LineItemsController, type: :request do
-
     let!(:order) { create(:order_with_line_items, line_items_count: 1) }
 
     let(:product) { create(:product) }
@@ -49,6 +50,27 @@ module Spree
     context "as the order owner" do
       before do
         allow_any_instance_of(Order).to receive_messages user: current_api_user
+      end
+
+      context "dealing with a completed order" do
+        let!(:order) { create(:completed_order_with_totals) }
+
+        it "can't add a new line item" do
+          post spree.api_order_line_items_path(order), params: { line_item: { variant_id: product.master.to_param, quantity: 1 } }
+          assert_unauthorized!
+        end
+
+        it "can't update a line item" do
+          line_item = order.line_items.first
+          put spree.api_order_line_item_path(order, line_item), params: { line_item: { quantity: 10 } }
+          assert_unauthorized!
+        end
+
+        it "can't delete a line item" do
+          line_item = order.line_items.first
+          delete spree.api_order_line_item_path(order, line_item)
+          assert_unauthorized!
+        end
       end
 
       it "can add a new line item to an existing order" do

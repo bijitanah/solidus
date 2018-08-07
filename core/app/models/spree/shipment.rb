@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   # An order's planned shipments including tracking and cost.
   #
@@ -7,10 +9,10 @@ module Spree
 
     has_many :adjustments, as: :adjustable, inverse_of: :adjustable, dependent: :delete_all
     has_many :inventory_units, dependent: :destroy, inverse_of: :shipment
-    has_many :shipping_rates, -> { order(:cost) }, dependent: :destroy
+    has_many :shipping_rates, -> { order(:cost) }, dependent: :destroy, inverse_of: :shipment
     has_many :shipping_methods, through: :shipping_rates
     has_many :state_changes, as: :stateful
-    has_many :cartons, -> { uniq }, through: :inventory_units
+    has_many :cartons, -> { distinct }, through: :inventory_units
 
     before_validation :set_cost_zero_when_nil
 
@@ -80,7 +82,7 @@ module Spree
 
     def can_transition_from_pending_to_ready?
       order.can_ship? &&
-        inventory_units.all? { |iu| iu.allow_ship? || iu.canceled? } &&
+        inventory_units.all? { |iu| iu.shipped? || iu.allow_ship? || iu.canceled? } &&
         (order.paid? || !Spree::Config[:require_payment_to_ship])
     end
 
@@ -89,7 +91,12 @@ module Spree
     end
 
     extend DisplayMoney
-    money_methods :cost, :amount, :discounted_cost, :final_price, :item_cost
+    money_methods(
+      :cost, :amount, :discounted_cost, :final_price, :item_cost,
+      :total, :total_before_tax,
+    )
+    deprecate display_discounted_cost: :display_total_before_tax, deprecator: Spree::Deprecation
+    deprecate display_final_price: :display_total, deprecator: Spree::Deprecation
     alias_attribute :amount, :cost
 
     def add_shipping_method(shipping_method, selected = false)
@@ -116,18 +123,40 @@ module Spree
     def discounted_cost
       cost + promo_total
     end
+    deprecate discounted_cost: :total_before_tax, deprecator: Spree::Deprecation
     alias discounted_amount discounted_cost
+    deprecate discounted_amount: :total_before_tax, deprecator: Spree::Deprecation
+
+    # @return [BigDecimal] the amount of this shipment, taking into
+    #   consideration all its adjustments.
+    def total
+      cost + adjustment_total
+    end
+    alias final_price total
+    deprecate final_price: :total, deprecator: Spree::Deprecation
+
+    # @return [BigDecimal] the amount of this item, taking into consideration
+    #   all non-tax adjustments.
+    def total_before_tax
+      amount + adjustments.select { |a| !a.tax? && a.eligible? }.sum(&:amount)
+    end
+
+    # @return [BigDecimal] the amount of this shipment before VAT tax
+    # @note just like `cost`, this does not include any additional tax
+    def total_excluding_vat
+      total_before_tax - included_tax_total
+    end
+    alias pre_tax_amount total_excluding_vat
+    deprecate pre_tax_amount: :total_excluding_vat, deprecator: Spree::Deprecation
+
+    def total_with_items
+      total + item_cost
+    end
+    alias final_price_with_items total_with_items
+    deprecate final_price_with_items: :total_with_items, deprecator: Spree::Deprecation
 
     def editable_by?(_user)
       !shipped?
-    end
-
-    def final_price
-      cost + adjustment_total
-    end
-
-    def final_price_with_items
-      item_cost + final_price
     end
 
     # Decrement the stock counts for all pending inventory units in this
@@ -156,15 +185,11 @@ module Spree
     end
 
     def item_cost
-      line_items.map(&:final_amount).sum
+      line_items.map(&:total).sum
     end
 
     def line_items
       inventory_units.includes(:line_item).map(&:line_item).uniq
-    end
-
-    def pre_tax_amount
-      discounted_amount - included_tax_total
     end
 
     def ready_or_pending?
@@ -196,6 +221,14 @@ module Spree
       shipping_rates
     end
 
+    def select_shipping_method(shipping_method)
+      estimator = Spree::Config.stock.estimator_class.new
+      rates = estimator.shipping_rates(to_package, false)
+      rate = rates.detect { |r| r.shipping_method_id == shipping_method.id }
+      rate.selected = true
+      self.shipping_rates = [rate]
+    end
+
     def selected_shipping_rate
       shipping_rates.detect(&:selected?)
     end
@@ -209,14 +242,19 @@ module Spree
     end
 
     def selected_shipping_rate_id=(id)
-      selected_shipping_rate.update(selected: false) if selected_shipping_rate
+      return if selected_shipping_rate_id == id
       new_rate = shipping_rates.detect { |rate| rate.id == id.to_i }
-      fail(
-        ArgumentError,
-        "Could not find shipping rate id #{id} for shipment #{number}"
-      ) unless new_rate
-      new_rate.update(selected: true)
-      save!
+      unless new_rate
+        fail(
+          ArgumentError,
+          "Could not find shipping rate id #{id} for shipment #{number}"
+        )
+      end
+
+      transaction do
+        selected_shipping_rate.update!(selected: false) if selected_shipping_rate
+        new_rate.update!(selected: true)
+      end
     end
 
     # Determines the appropriate +state+ according to the following logic:
@@ -305,10 +343,11 @@ module Spree
       end
     end
 
-    # Updates various aspects of the Shipment while bypassing any callbacks.  Note that this method takes an explicit reference to the
-    # Order object.  This is necessary because the association actually has a stale (and unsaved) copy of the Order and so it will not
-    # yield the correct results.
-    def update!(order)
+    # Updates the state of the Shipment bypassing any callbacks.
+    #
+    # If this moves the shipmnent to the 'shipped' state, after_ship will be
+    # called.
+    def update_state
       old_state = state
       new_state = determine_state(order)
       if new_state != old_state
@@ -320,38 +359,32 @@ module Spree
       end
     end
 
-    def transfer_to_location(variant, quantity, stock_location)
-      if quantity <= 0
-        raise ArgumentError
-      end
-
-      transaction do
-        new_shipment = order.shipments.create!(stock_location: stock_location)
-
-        order.contents.remove(variant, quantity, { shipment: self })
-        order.contents.add(variant, quantity, { shipment: new_shipment })
-
-        refresh_rates
-        new_shipment.refresh_rates
-        save!
-        new_shipment.save!
+    def update!(order_or_attrs)
+      if order_or_attrs.is_a?(Spree::Order)
+        Spree::Deprecation.warn "Calling Shipment#update! with an order to update the shipments state is deprecated. Please use Shipment#update_state instead."
+        if order_or_attrs.object_id != order.object_id
+          Spree::Deprecation.warn "Additionally, update! is being passed an instance of order which isn't the same object as the shipment's order association"
+        end
+        update_state
+      else
+        super
       end
     end
 
+    def transfer_to_location(variant, quantity, stock_location)
+      Spree::Deprecation.warn("Please use the Spree::FulfilmentChanger class instead of Spree::Shipment#transfer_to_location", caller)
+      new_shipment = order.shipments.create!(stock_location: stock_location)
+      transfer_to_shipment(variant, quantity, new_shipment)
+    end
+
     def transfer_to_shipment(variant, quantity, shipment_to_transfer_to)
-      if quantity <= 0 || self == shipment_to_transfer_to
-        raise ArgumentError
-      end
-
-      transaction do
-        order.contents.remove(variant, quantity, { shipment: self })
-        order.contents.add(variant, quantity, { shipment: shipment_to_transfer_to })
-
-        refresh_rates
-        save!
-        shipment_to_transfer_to.refresh_rates
-        shipment_to_transfer_to.save!
-      end
+      Spree::Deprecation.warn("Please use the Spree::FulfilmentChanger class instead of Spree::Shipment#transfer_to_location", caller)
+      Spree::FulfilmentChanger.new(
+        current_shipment: self,
+        desired_shipment: shipment_to_transfer_to,
+        variant: variant,
+        quantity: quantity
+      ).run!
     end
 
     def requires_shipment?

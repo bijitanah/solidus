@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 module Spree
-  class Promotion
+  class Promotion < Spree::Base
     module Actions
       class FreeShipping < Spree::PromotionAction
         def perform(payload = {})
@@ -23,7 +25,7 @@ module Spree
         end
 
         def label
-          "#{Spree.t(:promotion)} (#{promotion.name})"
+          "#{I18n.t('spree.promotion')} (#{promotion.name})"
         end
 
         def compute_amount(shipment)

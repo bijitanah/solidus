@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Store, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Store, type: :model do
   it { is_expected.to respond_to(:cart_tax_country_iso) }
 
   describe ".by_url (deprecated)" do
@@ -91,6 +93,63 @@ describe Spree::Store, type: :model do
 
       it "responds with a default_cart_tax_location with that country" do
         expect(subject.default_cart_tax_location).to eq(Spree::Tax::TaxLocation.new(country: country))
+      end
+    end
+  end
+
+  describe '#available_locales' do
+    let(:store) { described_class.new(available_locales: locales) }
+    subject { store.available_locales }
+
+    context 'with available_locales: []' do
+      let(:locales) { [] }
+
+      it "returns all available locales" do
+        expect(subject).to eq([:en])
+      end
+
+      it "serializes as nil" do
+        expect(store[:available_locales]).to be nil
+      end
+    end
+
+    context 'with available_locales: [:en]' do
+      let(:locales) { [:en] }
+
+      it "returns [:en]" do
+        expect(subject).to eq([:en])
+      end
+
+      it "serializes correctly" do
+        expect(store[:available_locales]).to eq("en")
+      end
+    end
+
+    context 'with available_locales: [:en, :fr]' do
+      let(:locales) { [:en, :fr] }
+
+      it "returns [:fr]" do
+        expect(subject).to eq([:en, :fr])
+      end
+
+      it "serializes correctly" do
+        expect(store[:available_locales]).to eq("en,fr")
+      end
+    end
+
+    context 'with available_locales: [:fr]' do
+      let(:locales) { [:fr] }
+
+      it "returns [:fr]" do
+        expect(subject).to eq([:fr])
+      end
+    end
+
+    context 'with available_locales: ["fr"]' do
+      let(:locales) { ["fr"] }
+
+      it "returns symbols [:fr]" do
+        expect(subject).to eq([:fr])
       end
     end
   end

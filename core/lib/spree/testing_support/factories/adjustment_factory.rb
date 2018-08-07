@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require 'spree/testing_support/factories/line_item_factory'
 require 'spree/testing_support/factories/order_factory'
 require 'spree/testing_support/factories/tax_category_factory'
 require 'spree/testing_support/factories/tax_rate_factory'
 require 'spree/testing_support/factories/zone_factory'
 
-FactoryGirl.define do
-  factory :adjustment, class: Spree::Adjustment do
+FactoryBot.define do
+  factory :adjustment, class: 'Spree::Adjustment' do
     order
     adjustable { order }
     amount 100.0
@@ -20,7 +22,7 @@ FactoryGirl.define do
       end
     end
 
-    factory :tax_adjustment, class: Spree::Adjustment do
+    factory :tax_adjustment, class: 'Spree::Adjustment' do
       order { adjustable.order }
       association(:adjustable, factory: :line_item)
       amount 10.0
@@ -35,7 +37,7 @@ FactoryGirl.define do
             adjustment.source.tax_categories = []
           end
           adjustment.source.save
-          adjustment.update!
+          adjustment.recalculate
         end
       end
     end

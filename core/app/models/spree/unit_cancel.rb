@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This represents an inventory unit that has been canceled from an order after it has already been completed
 # The reason specifies why it was canceled.
 # This class should encapsulate logic related to canceling inventory after order complete
@@ -20,7 +22,7 @@ class Spree::UnitCancel < Spree::Base
       source: self,
       amount: amount,
       order: inventory_unit.order,
-      label: "#{Spree.t(:cancellation)} - #{reason}",
+      label: "#{I18n.t('spree.cancellation')} - #{reason}",
       eligible: true,
       finalized: true
     )

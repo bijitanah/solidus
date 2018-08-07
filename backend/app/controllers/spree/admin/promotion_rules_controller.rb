@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Spree::Admin::PromotionRulesController < Spree::Admin::BaseController
   helper 'spree/promotion_rules'
 
@@ -8,7 +10,7 @@ class Spree::Admin::PromotionRulesController < Spree::Admin::BaseController
     @promotion_rule = @promotion_rule_type.new(promotion_rule_params)
     @promotion_rule.promotion = @promotion
     if @promotion_rule.save
-      flash[:success] = Spree.t(:successfully_created, resource: Spree.t(:promotion_rule))
+      flash[:success] = t('spree.successfully_created', resource: t('spree.promotion_rule'))
     end
     respond_to do |format|
       format.html { redirect_to spree.edit_admin_promotion_path(@promotion) }
@@ -19,7 +21,7 @@ class Spree::Admin::PromotionRulesController < Spree::Admin::BaseController
   def destroy
     @promotion_rule = @promotion.promotion_rules.find(params[:id])
     if @promotion_rule.destroy
-      flash[:success] = Spree.t(:successfully_removed, resource: Spree.t(:promotion_rule))
+      flash[:success] = t('spree.successfully_removed', resource: t('spree.promotion_rule'))
     end
     respond_to do |format|
       format.html { redirect_to spree.edit_admin_promotion_path(@promotion) }
@@ -33,6 +35,10 @@ class Spree::Admin::PromotionRulesController < Spree::Admin::BaseController
     @promotion = Spree::Promotion.find(params[:promotion_id])
   end
 
+  def model_class
+    Spree::PromotionRule
+  end
+
   def validate_promotion_rule_type
     requested_type = params[:promotion_rule].delete(:type)
     promotion_rule_types = Rails.application.config.spree.promotions.rules
@@ -40,7 +46,7 @@ class Spree::Admin::PromotionRulesController < Spree::Admin::BaseController
       klass.name == requested_type
     end
     if !@promotion_rule_type
-      flash[:error] = Spree.t(:invalid_promotion_rule)
+      flash[:error] = t('spree.invalid_promotion_rule')
       respond_to do |format|
         format.html { redirect_to spree.edit_admin_promotion_path(@promotion) }
         format.js   { render layout: false }

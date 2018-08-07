@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::Promotion::Rules::UserLoggedIn, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::Promotion::Rules::UserLoggedIn, type: :model do
   let(:rule) { Spree::Promotion::Rules::UserLoggedIn.new }
 
   context "#eligible?(order)" do

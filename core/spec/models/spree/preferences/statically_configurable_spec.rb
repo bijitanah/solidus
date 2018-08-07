@@ -1,4 +1,7 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require 'rails_helper'
+require 'spree/preferences/statically_configurable'
 
 module Spree
   RSpec.describe Preferences::StaticallyConfigurable do

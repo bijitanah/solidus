@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Spree
   class LocalizedNumber
     # Given a string, strips all non-price-like characters from it,
@@ -22,7 +24,7 @@ module Spree
       number = number.gsub(separator, '.') unless separator == '.'
 
       # Handle empty string for ruby 2.4 compatibility
-      BigDecimal.new(number.presence || 0)
+      BigDecimal(number.presence || 0)
     end
   end
 end

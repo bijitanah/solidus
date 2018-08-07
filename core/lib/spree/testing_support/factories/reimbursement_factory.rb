@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spree/testing_support/factories/customer_return_factory'
 
-FactoryGirl.define do
-  factory :reimbursement, class: Spree::Reimbursement do
+FactoryBot.define do
+  factory :reimbursement, class: 'Spree::Reimbursement' do
     transient do
       return_items_count 1
     end

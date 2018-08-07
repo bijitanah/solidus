@@ -1,8 +1,10 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require 'rails_helper'
 
 # Regression tests for https://github.com/spree/spree/issues/2179
 module Spree
-  describe OrderMerger, type: :model do
+  RSpec.describe OrderMerger, type: :model do
     let(:variant) { create(:variant) }
     let!(:store) { create(:store, default: true) }
     let(:order_1) { Spree::Order.create }

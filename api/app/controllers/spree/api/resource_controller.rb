@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Spree::Api::ResourceController < Spree::Api::BaseController
   before_action :load_resource, only: [:show, :update, :destroy]
 
@@ -56,6 +58,8 @@ class Spree::Api::ResourceController < Spree::Api::BaseController
     else
       invalid_resource!(@object)
     end
+  rescue ActiveRecord::DeleteRestrictionError
+    render "spree/api/errors/delete_restriction", status: 422
   end
 
   protected

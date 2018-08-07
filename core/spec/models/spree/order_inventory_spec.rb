@@ -1,12 +1,13 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-describe Spree::OrderInventory, type: :model do
+require 'rails_helper'
+
+RSpec.describe Spree::OrderInventory, type: :model do
   let(:order) { create :completed_order_with_totals }
   let(:line_item) { order.line_items.first }
   let(:shipment) { order.shipments.first }
   let(:variant) { subject.variant }
   let(:stock_item) { shipment.stock_location.stock_item(variant) }
-
 
   subject { described_class.new(order, line_item) }
 
@@ -67,7 +68,7 @@ describe Spree::OrderInventory, type: :model do
       before { Spree::Config.track_inventory_levels = false }
 
       it "creates on hand inventory units" do
-        variant.stock_items.destroy_all
+        variant.stock_items.each(&:really_destroy!)
 
         subject.verify(shipment)
 
@@ -82,7 +83,7 @@ describe Spree::OrderInventory, type: :model do
       let(:new_quantity) { 1 }
 
       it "creates on hand inventory units" do
-        variant.stock_items.destroy_all
+        variant.stock_items.each(&:really_destroy!)
 
         subject.verify(shipment)
 
